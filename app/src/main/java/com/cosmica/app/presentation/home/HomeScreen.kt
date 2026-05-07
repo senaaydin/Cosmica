@@ -18,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -85,52 +84,42 @@ private fun ApodContent(
                 .fillMaxSize()
                 .verticalScroll(scrollState),
         ) {
-            // ── Hero image with parallax ─────────────────────────────────
+            // ── Hero image / video with parallax ────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(HERO_HEIGHT.dp),
             ) {
-                val imageUrl = if (apod.isVideo) {
-                    youTubeThumbnail(apod.url)
-                } else {
-                    apod.hdUrl ?: apod.url
-                }
-
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = stringResource(R.string.cd_apod_image),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer { translationY = parallaxOffset },
-                )
-
-                // Gradient scrim for readability
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    CosmosBlack.copy(alpha = 0.1f),
-                                    CosmosBlack.copy(alpha = 0.85f),
-                                ),
-                            )
-                        )
-                )
-
                 if (apod.isVideo) {
-                    Icon(
-                        imageVector        = Icons.Default.PlayArrow,
-                        contentDescription = stringResource(R.string.cd_video_thumbnail),
-                        tint               = MaterialTheme.colorScheme.onBackground,
-                        modifier           = Modifier
-                            .align(Alignment.Center)
-                            .padding(8.dp),
+                    YoutubePlayer(
+                        videoUrl = apod.url,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(apod.url)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = stringResource(R.string.cd_apod_image),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer { translationY = parallaxOffset },
+                    )
+
+                    // Gradient scrim for readability
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        CosmosBlack.copy(alpha = 0.1f),
+                                        CosmosBlack.copy(alpha = 0.85f),
+                                    ),
+                                )
+                            )
                     )
                 }
 
@@ -208,9 +197,3 @@ private fun ApodContent(
     }
 }
 
-/** Extracts a YouTube video ID and returns the HQ thumbnail URL. */
-private fun youTubeThumbnail(url: String): String {
-    val videoId = Regex("(?:youtu\\.be/|youtube\\.com/embed/|v=)([A-Za-z0-9_-]{11})")
-        .find(url)?.groupValues?.getOrNull(1) ?: return url
-    return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
-}

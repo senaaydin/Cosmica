@@ -8,13 +8,11 @@ interface ApodApiService {
 
     @GET("planetary/apod")
     suspend fun getApod(
-        @Query("api_key") apiKey: String,
         @Query("date") date: String? = null,
     ): ApodDto
 
     @GET("planetary/apod")
     suspend fun getApodRange(
-        @Query("api_key")    apiKey: String,
         @Query("start_date") startDate: String,
         @Query("end_date")   endDate: String,
     ): List<ApodDto>

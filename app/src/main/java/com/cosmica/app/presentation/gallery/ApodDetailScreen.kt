@@ -64,7 +64,7 @@ fun ApodDetailScreen(
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(apod.hdUrl ?: apod.url)
+                                .data(apod.url)
                                 .crossfade(true)
                                 .build(),
                             contentDescription = stringResource(R.string.cd_apod_image),

@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter
 
 class ApodPagingSource(
     private val apodApiService: ApodApiService,
-    private val apiKey: String,
     private val favoritesDates: Set<String> = emptySet(),
 ) : PagingSource<LocalDate, Apod>() {
 
@@ -24,7 +23,6 @@ class ApodPagingSource(
 
         return try {
             val dtos = apodApiService.getApodRange(
-                apiKey    = apiKey,
                 startDate = startDay.format(DATE_FORMATTER),
                 endDate   = endDay.format(DATE_FORMATTER),
             )

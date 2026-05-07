@@ -3,7 +3,6 @@ package com.cosmica.app.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.cosmica.app.BuildConfig
 import com.cosmica.app.data.local.dao.FavoriteApodDao
 import com.cosmica.app.data.mapper.toDomain
 import com.cosmica.app.data.mapper.toFavoriteEntity
@@ -25,38 +24,31 @@ class ApodRepositoryImpl @Inject constructor(
 
     override suspend fun getTodayApod(): Result<Apod> = runCatching {
         val dto = try {
-            apodApiService.getApod(apiKey = BuildConfig.NASA_API_KEY)
+            apodApiService.getApod()
         } catch (e: HttpException) {
             if (e.code() != 400) throw e
             // Today's APOD not yet published (NASA publishes on US Eastern time).
             val yesterday = LocalDate.now().minusDays(1)
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-            apodApiService.getApod(apiKey = BuildConfig.NASA_API_KEY, date = yesterday)
+            apodApiService.getApod(date = yesterday)
         }
         dto.toDomain(isFavorite = favoriteApodDao.isFavorite(dto.date))
     }
 
     override suspend fun getApodByDate(date: String): Result<Apod> = runCatching {
-        val dto = apodApiService.getApod(apiKey = BuildConfig.NASA_API_KEY, date = date)
-        val fav = favoriteApodDao.isFavorite(dto.date)
-        dto.toDomain(isFavorite = fav)
+        val dto = apodApiService.getApod(date = date)
+        dto.toDomain(isFavorite = favoriteApodDao.isFavorite(dto.date))
     }
 
-    override fun getApodPager(): Flow<PagingData<Apod>> {
-        return Pager(
+    override fun getApodPager(): Flow<PagingData<Apod>> =
+        Pager(
             config = PagingConfig(
-                pageSize         = 20,
+                pageSize           = 7,
                 enablePlaceholders = false,
-                prefetchDistance = 5,
+                prefetchDistance   = 3,
             ),
-            pagingSourceFactory = {
-                ApodPagingSource(
-                    apodApiService = apodApiService,
-                    apiKey         = BuildConfig.NASA_API_KEY,
-                )
-            },
+            pagingSourceFactory = { ApodPagingSource(apodApiService) },
         ).flow
-    }
 
     override suspend fun isFavorite(date: String): Boolean =
         favoriteApodDao.isFavorite(date)
