@@ -1,0 +1,46 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "test", flavor: "dev", build_type: "Debug")
+  end
+
+  desc "Run lint checks"
+  lane :lint do
+    gradle(task: "lint", flavor: "dev", build_type: "Debug")
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    gradle(task: "assemble", flavor: "prod", build_type: "Debug")
+  end
+
+  desc "Build release APK (requires signing ENV vars)"
+  lane :build_release do
+    gradle(
+      task:       "assemble",
+      flavor:     "prod",
+      build_type: "Release",
+      properties: {
+        "android.injected.signing.store.file"     => ENV["KEYSTORE_PATH"],
+        "android.injected.signing.store.password" => ENV["STORE_PASSWORD"],
+        "android.injected.signing.key.alias"      => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
+      }
+    )
+  end
+
+  desc "Build debug APK and upload to Firebase App Distribution"
+  lane :deploy_test do
+    build_debug
+    firebase_app_distribution(
+      app:              ENV["FIREBASE_APP_ID"],
+      service_credentials_file: ENV["FIREBASE_CREDENTIALS"],
+      release_notes:    "CI build — #{ENV['GITHUB_SHA']&.slice(0, 7) || 'local'}",
+      groups:           "testers",
+    )
+  end
+
+end

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cosmica</string>
+
+    <!-- Bottom navigation labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_gallery">Gallery</string>
+    <string name="nav_asteroids">Asteroids</string>
+    <string name="nav_search">Search</string>
+
+    <!-- HomeScreen -->
+    <string name="home_title">Astronomy Picture of the Day</string>
+    <string name="home_add_favorite">Add to favorites</string>
+    <string name="home_remove_favorite">Remove from favorites</string>
+    <string name="home_retry">Retry</string>
+    <string name="home_copyright">© %s</string>
+    <string name="home_explanation_label">About this image</string>
+    <string name="home_watch_video">Watch on YouTube</string>
+
+    <!-- GalleryScreen -->
+    <string name="gallery_title">APOD Gallery</string>
+    <string name="gallery_date_picker_title">Select date range</string>
+    <string name="gallery_empty">No photos found for this date range.</string>
+    <string name="gallery_image_content_description">%s – APOD photo</string>
+
+    <!-- AsteroidsScreen -->
+    <string name="asteroids_title">Near-Earth Objects</string>
+    <string name="asteroids_this_week">Approaching Earth This Week</string>
+    <string name="asteroids_hazardous">Potentially Hazardous</string>
+    <string name="asteroids_safe">Safe</string>
+    <string name="asteroids_diameter">Diameter: %1$.2f – %2$.2f km</string>
+    <string name="asteroids_velocity">Speed: %s km/h</string>
+    <string name="asteroids_miss_km">Miss Distance: %s km</string>
+    <string name="asteroids_miss_lunar">(%1$.2f lunar distances)</string>
+    <string name="asteroids_approach_date">Closest approach: %s</string>
+    <string name="asteroids_magnitude">Absolute Magnitude: %.1f H</string>
+    <string name="asteroids_orbiting">Orbiting: %s</string>
+    <string name="asteroids_empty">No asteroids approaching Earth this week.</string>
+
+    <!-- SearchScreen -->
+    <string name="search_title">NASA Image Library</string>
+    <string name="search_hint">Search space images…</string>
+    <string name="search_filter_all">All</string>
+    <string name="search_filter_image">Images</string>
+    <string name="search_filter_video">Videos</string>
+    <string name="search_empty_start">Search the NASA image library to explore the cosmos.</string>
+    <string name="search_empty_results">No results found for \'%s\'.</string>
+    <string name="search_result_content_description">%s preview</string>
+
+    <!-- Error messages -->
+    <string name="error_no_internet">No internet connection. Please check your network.</string>
+    <string name="error_timeout">Request timed out. Please try again.</string>
+    <string name="error_rate_limit">API rate limit exceeded. Try again later.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_not_found">The requested resource was not found.</string>
+    <string name="loading">Loading…</string>
+
+    <!-- FavoritesScreen -->
+    <string name="nav_favorites">Favorites</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty">No favorites yet.\nTap the heart on the home screen to save an APOD.</string>
+    <string name="favorites_image_content_description">%s – saved APOD</string>
+
+    <!-- NasaImageDetailScreen -->
+    <string name="search_detail_date">Date: %s</string>
+    <string name="search_detail_no_description">No description available.</string>
+
+    <!-- Gallery date picker -->
+    <string name="gallery_jump_to_date">Jump to date</string>
+    <string name="gallery_date_picker_confirm">Go</string>
+    <string name="gallery_date_picker_dismiss">Cancel</string>
+
+    <!-- Content descriptions (accessibility) -->
+    <string name="cd_apod_image">Astronomy picture of the day</string>
+    <string name="cd_favorite_button">Favorite button</string>
+    <string name="cd_back_button">Back</string>
+    <string name="cd_video_thumbnail">Video thumbnail</string>
+    <string name="cd_asteroid_hazard_indicator">Hazard indicator</string>
+</resources>

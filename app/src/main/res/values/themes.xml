@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Minimal XML theme: Compose owns all visual design.
+         NoActionBar keeps the window chrome clean before setContent fires. -->
+    <style name="Theme.Cosmica" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/cosmos_black</item>
+        <item name="android:statusBarColor">@color/cosmos_black</item>
+        <item name="android:navigationBarColor">@color/cosmos_black</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
