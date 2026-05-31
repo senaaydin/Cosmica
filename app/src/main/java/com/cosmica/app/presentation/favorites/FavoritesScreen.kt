@@ -32,10 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -119,7 +116,7 @@ fun FavoritesScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(favorites, key = { it.date }) { apod ->
-                        SwipeableFavoriteRow(
+                        FavoriteRow(
                             apod = apod,
                             onClick = { onApodClick(apod.date) },
                             onRemove = { viewModel.remove(apod) },
@@ -128,47 +125,6 @@ fun FavoritesScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SwipeableFavoriteRow(
-    apod: Apod,
-    onClick: () -> Unit,
-    onRemove: () -> Unit,
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart || value == SwipeToDismissBoxValue.StartToEnd) {
-                onRemove()
-                true
-            } else false
-        },
-    )
-
-    SwipeToDismissBox(
-        state            = dismissState,
-        backgroundContent = { DismissBackground() },
-        content          = { FavoriteRow(apod = apod, onClick = onClick, onRemove = onRemove) },
-    )
-}
-
-@Composable
-private fun DismissBackground() {
-    Box(
-        modifier         = Modifier
-            .fillMaxSize()
-            .background(MeteorRed.copy(alpha = 0.84f), shape = RoundedCornerShape(8.dp))
-            .padding(16.dp),
-        contentAlignment = Alignment.CenterEnd,
-    ) {
-        Icon(
-            imageVector        = Icons.Rounded.Delete,
-            contentDescription = null,
-            tint               = MaterialTheme.colorScheme.onError,
-            modifier           = Modifier.size(28.dp),
-        )
     }
 }
 

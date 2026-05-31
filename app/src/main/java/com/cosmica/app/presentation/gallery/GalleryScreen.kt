@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BrokenImage
@@ -33,10 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -138,6 +142,7 @@ fun GalleryScreen(
                 favoriteDates   = favoriteDates,
                 onApodClick     = onApodClick,
                 onToggleFavorite = viewModel::toggleFavorite,
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -189,13 +194,27 @@ private fun ApodGrid(
     favoriteDates: Set<String>,
     onApodClick: (String) -> Unit,
     onToggleFavorite: (Apod, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    val gridState = rememberLazyGridState()
+
+    LaunchedEffect(apods) {
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .collect { lastVisibleIndex ->
+                val itemCount = apods.itemCount
+                if (itemCount > 0 && lastVisibleIndex != null && lastVisibleIndex >= itemCount - 4) {
+                    apods[itemCount - 1]
+                }
+            }
+    }
+
     LazyVerticalGrid(
         columns               = GridCells.Fixed(2),
+        state                 = gridState,
         contentPadding        = PaddingValues(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 100.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement   = Arrangement.spacedBy(10.dp),
-        modifier              = Modifier.fillMaxSize(),
+        modifier              = modifier.fillMaxSize(),
     ) {
         items(count = apods.itemCount) { index ->
             apods[index]?.let { apod ->
@@ -206,6 +225,27 @@ private fun ApodGrid(
                     onClick    = { onApodClick(apod.date) },
                     onToggleFavorite = { onToggleFavorite(apod, isFav) },
                 )
+            }
+        }
+
+        if (apods.loadState.append is LoadState.Error) {
+            val e = (apods.loadState.append as LoadState.Error).error
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    Text(
+                        text = e.message ?: stringResource(R.string.error_generic),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(onClick = { apods.retry() }) {
+                        Text(stringResource(R.string.home_retry))
+                    }
+                }
             }
         }
 

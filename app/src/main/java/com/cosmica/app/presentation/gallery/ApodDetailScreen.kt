@@ -82,32 +82,34 @@ fun ApodDetailScreen(
                                 modifier     = Modifier.fillMaxSize(),
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            CosmosBlack.copy(alpha = 0f),
-                                            CosmosBlack.copy(alpha = 0.26f),
-                                            CosmosBlack.copy(alpha = 0.96f),
+                        if (!apod.isVideo) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                CosmosBlack.copy(alpha = 0f),
+                                                CosmosBlack.copy(alpha = 0.26f),
+                                                CosmosBlack.copy(alpha = 0.96f),
+                                            ),
                                         ),
                                     ),
-                                ),
-                        )
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 24.dp),
-                        ) {
-                            Text(apod.title, style = MaterialTheme.typography.headlineLarge)
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                apod.date,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                            ) {
+                                Text(apod.title, style = MaterialTheme.typography.headlineLarge)
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    apod.date,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
                     Column(
@@ -115,6 +117,16 @@ fun ApodDetailScreen(
                             .background(MaterialTheme.colorScheme.background)
                             .padding(20.dp),
                     ) {
+                        if (apod.isVideo) {
+                            Text(apod.title, style = MaterialTheme.typography.headlineLarge)
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                apod.date,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(16.dp))
+                        }
                         apod.copyright?.let {
                             Text(
                                 text      = stringResource(R.string.home_copyright, it),

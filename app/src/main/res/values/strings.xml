@@ -103,5 +103,8 @@
     <string name="cd_delete_favorite">Remove from favorites</string>
     <string name="cd_back_button">Back</string>
     <string name="cd_video_thumbnail">Video thumbnail</string>
+    <string name="cd_play_video">Play video</string>
+    <string name="cd_fullscreen_video">Open video fullscreen</string>
+    <string name="cd_close_fullscreen_video">Close fullscreen video</string>
     <string name="cd_asteroid_hazard_indicator">Hazard indicator</string>
 </resources>
