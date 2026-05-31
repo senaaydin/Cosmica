@@ -6,7 +6,7 @@ import com.cosmica.app.BuildConfig
 import com.cosmica.app.data.remote.api.ApodApiService
 import com.cosmica.app.data.remote.api.NasaImageApiService
 import com.cosmica.app.data.remote.api.NeoApiService
-import com.cosmica.app.data.remote.interceptor.ApiKeyInterceptor
+import com.cosmica.app.data.remote.interceptor.QueryParamInterceptor
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -53,7 +53,7 @@ object NetworkModule {
     @Named("nasa_client")
     fun provideNasaOkHttpClient(base: OkHttpClient): OkHttpClient =
         base.newBuilder()
-            .addInterceptor(ApiKeyInterceptor(BuildConfig.NASA_API_KEY))
+            .addInterceptor(QueryParamInterceptor("api_key", BuildConfig.NASA_API_KEY))
             .build()
 
     @Provides

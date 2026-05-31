@@ -16,18 +16,19 @@ fun ApodDto.toDomain(isFavorite: Boolean = false): Apod = Apod(
 )
 
 fun Apod.toFavoriteEntity(): FavoriteApodEntity = FavoriteApodEntity(
-    date      = date,
-    title     = title,
-    url       = url,
-    hdUrl     = hdUrl,
-    mediaType = mediaType,
-    copyright = copyright,
+    date        = date,
+    title       = title,
+    explanation = explanation,
+    url         = url,
+    hdUrl       = hdUrl,
+    mediaType   = mediaType,
+    copyright   = copyright,
 )
 
 fun FavoriteApodEntity.toDomain(): Apod = Apod(
     date        = date,
     title       = title,
-    explanation = "",
+    explanation = explanation,
     url         = url,
     hdUrl       = hdUrl,
     mediaType   = mediaType,

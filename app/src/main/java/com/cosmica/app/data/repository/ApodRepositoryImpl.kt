@@ -3,15 +3,13 @@ package com.cosmica.app.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.cosmica.app.data.local.dao.FavoriteApodDao
 import com.cosmica.app.data.mapper.toDomain
-import com.cosmica.app.data.mapper.toFavoriteEntity
 import com.cosmica.app.data.paging.ApodPagingSource
 import com.cosmica.app.data.remote.api.ApodApiService
 import com.cosmica.app.domain.model.Apod
 import com.cosmica.app.domain.repository.ApodRepository
+import com.cosmica.app.domain.repository.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -19,7 +17,7 @@ import javax.inject.Inject
 
 class ApodRepositoryImpl @Inject constructor(
     private val apodApiService: ApodApiService,
-    private val favoriteApodDao: FavoriteApodDao,
+    private val favoriteRepository: FavoriteRepository,
 ) : ApodRepository {
 
     override suspend fun getTodayApod(): Result<Apod> = runCatching {
@@ -32,12 +30,12 @@ class ApodRepositoryImpl @Inject constructor(
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             apodApiService.getApod(date = yesterday)
         }
-        dto.toDomain(isFavorite = favoriteApodDao.isFavorite(dto.date))
+        dto.toDomain(isFavorite = favoriteRepository.isFavoriteOnce(dto.date))
     }
 
     override suspend fun getApodByDate(date: String): Result<Apod> = runCatching {
         val dto = apodApiService.getApod(date = date)
-        dto.toDomain(isFavorite = favoriteApodDao.isFavorite(dto.date))
+        dto.toDomain(isFavorite = favoriteRepository.isFavoriteOnce(dto.date))
     }
 
     override fun getApodPager(): Flow<PagingData<Apod>> =
@@ -49,16 +47,4 @@ class ApodRepositoryImpl @Inject constructor(
             ),
             pagingSourceFactory = { ApodPagingSource(apodApiService) },
         ).flow
-
-    override suspend fun isFavorite(date: String): Boolean =
-        favoriteApodDao.isFavorite(date)
-
-    override suspend fun addFavorite(apod: Apod) =
-        favoriteApodDao.insert(apod.toFavoriteEntity())
-
-    override suspend fun removeFavorite(date: String) =
-        favoriteApodDao.deleteByDate(date)
-
-    override fun getFavorites(): Flow<List<Apod>> =
-        favoriteApodDao.getAllFavorites().map { entities -> entities.map { it.toDomain() } }
 }
