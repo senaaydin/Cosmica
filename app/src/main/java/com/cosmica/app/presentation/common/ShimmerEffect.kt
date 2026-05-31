@@ -47,7 +47,7 @@ fun shimmerBrush(targetValue: Float = 1000f): Brush {
 fun ShimmerCard(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(shimmerBrush())
     )
 }

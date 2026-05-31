@@ -24,6 +24,7 @@ turbine = "1.2.0"
 mockwebserver = "4.12.0"
 timber = "5.0.1"
 chucker = "4.0.0"
+playServicesLocation = "21.3.0"
 
 [libraries]
 # AndroidX Core
@@ -70,12 +71,16 @@ paging-compose = { group = "androidx.paging", name = "paging-compose", version.r
 
 # Coroutines
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 chucker-library = { group = "com.github.chuckerteam.chucker", name = "library", version.ref = "chucker" }
 chucker-library-no-op = { group = "com.github.chuckerteam.chucker", name = "library-no-op", version.ref = "chucker" }
+
+# Location
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

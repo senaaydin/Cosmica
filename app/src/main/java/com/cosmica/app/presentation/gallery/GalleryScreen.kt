@@ -11,12 +11,17 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Videocam
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,12 +40,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -49,11 +56,14 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.cosmica.app.R
 import com.cosmica.app.domain.model.Apod
+import com.cosmica.app.presentation.common.AnimatedFavoriteIconButton
 import com.cosmica.app.presentation.common.EmptyState
 import com.cosmica.app.presentation.common.ErrorState
 import com.cosmica.app.presentation.common.GridShimmer
 import com.cosmica.app.presentation.common.ShimmerCard
+import com.cosmica.app.presentation.common.youtubeThumbnailUrl
 import com.cosmica.app.presentation.theme.CardSurface
+import com.cosmica.app.presentation.theme.CosmosBlack
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -63,32 +73,49 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun GalleryScreen(
     onApodClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
     viewModel: GalleryViewModel = hiltViewModel(),
 ) {
-    val apods = viewModel.apodPagingData.collectAsLazyPagingItems()
+    val apods           = viewModel.apodPagingData.collectAsLazyPagingItems()
+    val favoriteDates by viewModel.favoriteDates.collectAsStateWithLifecycle()
     var showDatePicker by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding(),
+    ) {
         Row(
-            modifier          = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, top = 16.dp, end = 12.dp, bottom = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text     = stringResource(R.string.gallery_title),
-                style    = MaterialTheme.typography.headlineMedium,
-                color    = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
-            )
-            IconButton(
-                onClick  = { showDatePicker = true },
-                modifier = Modifier.padding(end = 8.dp),
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.gallery_eyebrow),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(R.string.gallery_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+            IconButton(onClick = onSearchClick) {
                 Icon(
-                    imageVector        = Icons.Rounded.CalendarMonth,
+                    imageVector = Icons.Rounded.Search,
+                    contentDescription = stringResource(R.string.search_title),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(
+                    imageVector = Icons.Rounded.CalendarMonth,
                     contentDescription = stringResource(R.string.gallery_jump_to_date),
-                    tint               = MaterialTheme.colorScheme.onBackground,
+                    tint = MaterialTheme.colorScheme.onBackground,
                 )
             }
         }
@@ -106,7 +133,12 @@ fun GalleryScreen(
                 message = stringResource(R.string.gallery_empty),
                 icon    = Icons.Rounded.BrokenImage,
             )
-            else -> ApodGrid(apods = apods, onApodClick = onApodClick)
+            else -> ApodGrid(
+                apods           = apods,
+                favoriteDates   = favoriteDates,
+                onApodClick     = onApodClick,
+                onToggleFavorite = viewModel::toggleFavorite,
+            )
         }
     }
 
@@ -154,18 +186,26 @@ fun GalleryScreen(
 @Composable
 private fun ApodGrid(
     apods: LazyPagingItems<Apod>,
+    favoriteDates: Set<String>,
     onApodClick: (String) -> Unit,
+    onToggleFavorite: (Apod, Boolean) -> Unit,
 ) {
     LazyVerticalGrid(
         columns               = GridCells.Fixed(2),
-        contentPadding        = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement   = Arrangement.spacedBy(8.dp),
+        contentPadding        = PaddingValues(start = 12.dp, top = 2.dp, end = 12.dp, bottom = 100.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement   = Arrangement.spacedBy(10.dp),
         modifier              = Modifier.fillMaxSize(),
     ) {
         items(count = apods.itemCount) { index ->
             apods[index]?.let { apod ->
-                ApodThumbnail(apod = apod, onClick = { onApodClick(apod.date) })
+                val isFav = apod.date in favoriteDates
+                ApodThumbnail(
+                    apod       = apod,
+                    isFavorite = isFav,
+                    onClick    = { onApodClick(apod.date) },
+                    onToggleFavorite = { onToggleFavorite(apod, isFav) },
+                )
             }
         }
 
@@ -183,23 +223,60 @@ private fun ApodGrid(
 }
 
 @Composable
-private fun ApodThumbnail(apod: Apod, onClick: () -> Unit) {
+private fun ApodThumbnail(
+    apod: Apod,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(CardSurface)
             .clickable(onClick = onClick),
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(apod.url)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.gallery_image_content_description, apod.title),
-            contentScale = ContentScale.Crop,
-            modifier     = Modifier.fillMaxSize(),
+        if (apod.isVideo) {
+            VideoPreview(
+                videoUrl = apod.url,
+                title = apod.title,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(apod.url)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(R.string.gallery_image_content_description, apod.title),
+                contentScale = ContentScale.Crop,
+                modifier     = Modifier.fillMaxSize(),
+            )
+        }
+
+        AnimatedFavoriteIconButton(
+            isFavorite         = isFavorite,
+            onToggle           = onToggleFavorite,
+            contentDescription = stringResource(R.string.cd_favorite_button),
+            modifier           = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp),
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            CosmosBlack.copy(alpha = 0f),
+                            CosmosBlack.copy(alpha = 0.86f),
+                        ),
+                    ),
+                )
+                .padding(top = 28.dp),
         )
 
         Text(
@@ -210,12 +287,53 @@ private fun ApodThumbnail(apod: Apod, onClick: () -> Unit) {
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .background(
-                    MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-                )
                 .fillMaxWidth()
-                .padding(6.dp),
+                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+        )
+    }
+}
+
+@Composable
+private fun VideoPreview(
+    videoUrl: String,
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    val thumbnailUrl = youtubeThumbnailUrl(videoUrl)
+
+    Box(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (thumbnailUrl != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(thumbnailUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(R.string.cd_video_thumbnail),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Rounded.Videocam,
+                contentDescription = stringResource(R.string.cd_video_thumbnail),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(42.dp),
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(CosmosBlack.copy(alpha = 0.36f)),
+        )
+        Icon(
+            imageVector = Icons.Rounded.PlayCircle,
+            contentDescription = title,
+            tint = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.size(44.dp),
         )
     }
 }

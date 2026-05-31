@@ -117,9 +117,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Write secrets to local.properties
-        run: |
-          echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
+      - name: Write NASA_API_KEY to local.properties
+        run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
 
       - name: Decode keystore
         run: |

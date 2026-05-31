@@ -1,11 +1,10 @@
 package com.cosmica.app.presentation.home
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,14 +13,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,13 +36,14 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.cosmica.app.R
 import com.cosmica.app.domain.model.Apod
+import com.cosmica.app.presentation.common.AnimatedFavoriteIconButton
+import com.cosmica.app.presentation.common.ApodVideoPlayer
 import com.cosmica.app.presentation.common.ErrorState
 import com.cosmica.app.presentation.common.ScreenUiState
 import com.cosmica.app.presentation.theme.CosmosBlack
-import com.cosmica.app.presentation.theme.MeteorRed
-import com.cosmica.app.presentation.theme.SafeGreen
+import com.cosmica.app.presentation.theme.GlassSurface
 
-private const val HERO_HEIGHT = 420
+private const val HERO_HEIGHT = 470
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
@@ -78,20 +73,23 @@ private fun ApodContent(
     val scrollState: ScrollState = rememberScrollState()
     val parallaxOffset = scrollState.value * 0.4f
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState),
         ) {
-            // ── Hero image / video with parallax ────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(HERO_HEIGHT.dp),
             ) {
                 if (apod.isVideo) {
-                    YoutubePlayer(
+                    ApodVideoPlayer(
                         videoUrl = apod.url,
                         modifier = Modifier.fillMaxSize(),
                     )
@@ -115,41 +113,58 @@ private fun ApodContent(
                             .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
-                                        CosmosBlack.copy(alpha = 0.1f),
-                                        CosmosBlack.copy(alpha = 0.85f),
+                                        CosmosBlack.copy(alpha = 0.04f),
+                                        CosmosBlack.copy(alpha = 0.34f),
+                                        CosmosBlack.copy(alpha = 0.96f),
                                     ),
                                 )
                             )
                     )
                 }
 
-                // Date chip
-                Text(
-                    text     = apod.date,
-                    style    = MaterialTheme.typography.labelLarge,
-                    color    = MaterialTheme.colorScheme.onBackground,
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 24.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = apod.title,
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .statusBarsPadding()
-                        .padding(16.dp),
-                )
+                        .padding(16.dp)
+                        .background(GlassSurface, RoundedCornerShape(24.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = apod.date,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
             }
 
-            // ── Metadata card ────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                    .padding(horizontal = 20.dp, vertical = 18.dp),
             ) {
-                Text(
-                    text  = apod.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-
                 apod.copyright?.let { credit ->
-                    Spacer(Modifier.height(4.dp))
                     Text(
                         text     = stringResource(R.string.home_copyright, credit),
                         style    = MaterialTheme.typography.bodySmall,
@@ -174,26 +189,15 @@ private fun ApodContent(
             }
         }
 
-        // ── Floating favorite button ─────────────────────────────────────
-        val favTint by animateColorAsState(
-            targetValue  = if (apod.isFavorite) MeteorRed else SafeGreen,
-            animationSpec = tween(durationMillis = 300),
-            label        = "favColor",
-        )
-        FilledIconButton(
-            onClick = onToggleFavorite,
-            colors  = IconButtonDefaults.filledIconButtonColors(containerColor = favTint),
+        AnimatedFavoriteIconButton(
+            isFavorite = apod.isFavorite,
+            onToggle = onToggleFavorite,
+            size = 25.dp,
+            contentDescription = stringResource(R.string.cd_favorite_button),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .navigationBarsPadding()
                 .padding(end = 20.dp, bottom = 80.dp),
-        ) {
-            Icon(
-                imageVector        = if (apod.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                contentDescription = stringResource(R.string.cd_favorite_button),
-                tint               = MaterialTheme.colorScheme.onPrimary,
-            )
-        }
+        )
     }
 }
-

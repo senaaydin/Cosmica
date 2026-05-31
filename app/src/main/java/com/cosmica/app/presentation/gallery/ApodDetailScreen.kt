@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -34,8 +35,10 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.cosmica.app.R
+import com.cosmica.app.presentation.common.ApodVideoPlayer
 import com.cosmica.app.presentation.common.ErrorState
 import com.cosmica.app.presentation.common.ScreenUiState
+import com.cosmica.app.presentation.theme.CosmosBlack
 
 @Composable
 fun ApodDetailScreen(
@@ -55,30 +58,63 @@ fun ApodDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
                         .verticalScroll(rememberScrollState()),
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(320.dp),
+                            .height(420.dp),
                     ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(apod.url)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = stringResource(R.string.cd_apod_image),
-                            contentScale = ContentScale.Crop,
-                            modifier     = Modifier.fillMaxSize(),
+                        if (apod.isVideo) {
+                            ApodVideoPlayer(
+                                videoUrl = apod.url,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(apod.url)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = stringResource(R.string.cd_apod_image),
+                                contentScale = ContentScale.Crop,
+                                modifier     = Modifier.fillMaxSize(),
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            CosmosBlack.copy(alpha = 0f),
+                                            CosmosBlack.copy(alpha = 0.26f),
+                                            CosmosBlack.copy(alpha = 0.96f),
+                                        ),
+                                    ),
+                                ),
                         )
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 24.dp),
+                        ) {
+                            Text(apod.title, style = MaterialTheme.typography.headlineLarge)
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                apod.date,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                     Column(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.background)
                             .padding(20.dp),
                     ) {
-                        Text(apod.title, style = MaterialTheme.typography.headlineMedium)
-                        Text(apod.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         apod.copyright?.let {
                             Text(
                                 text      = stringResource(R.string.home_copyright, it),
