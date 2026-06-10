@@ -55,6 +55,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -216,7 +218,11 @@ private fun ApodGrid(
         verticalArrangement   = Arrangement.spacedBy(10.dp),
         modifier              = modifier.fillMaxSize(),
     ) {
-        items(count = apods.itemCount) { index ->
+        items(
+            count = apods.itemCount,
+            key = apods.itemKey { apod: Apod -> apod.date },
+            contentType = apods.itemContentType { apod: Apod -> if (apod.isVideo) "video" else "image" },
+        ) { index ->
             apods[index]?.let { apod ->
                 val isFav = apod.date in favoriteDates
                 ApodThumbnail(
@@ -284,11 +290,15 @@ private fun ApodThumbnail(
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
+            val context = LocalContext.current
+            val imageRequest = remember(apod.url) {
+                ImageRequest.Builder(context)
                     .data(apod.url)
                     .crossfade(true)
-                    .build(),
+                    .build()
+            }
+            AsyncImage(
+                model = imageRequest,
                 contentDescription = stringResource(R.string.gallery_image_content_description, apod.title),
                 contentScale = ContentScale.Crop,
                 modifier     = Modifier.fillMaxSize(),

@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -93,8 +94,9 @@ private fun AsteroidList(
         contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        items(asteroids, key = { it.id }) { neo ->
-            AsteroidCard(neo = neo, onClick = { onAsteroidClick(neo.id) })
+        items(asteroids, key = { it.id }, contentType = { "asteroid" }) { neo ->
+            val onClick = remember(neo.id) { { onAsteroidClick(neo.id) } }
+            AsteroidCard(neo = neo, onClick = onClick)
         }
     }
 }

@@ -40,6 +40,16 @@ android {
                 "proguard-rules.pro"
             )
         }
+        // Release-like build for CPU/memory profiling. Inherits R8 + shrink
+        // so measurements reflect real production performance, while
+        // isProfileable=true lets Android Studio Profiler attach.
+        create("benchmark") {
+            initWith(getByName("release"))
+            isProfileable = true
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
     }
 
     flavorDimensions += "environment"
@@ -143,4 +153,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.chucker.library)
     releaseImplementation(libs.chucker.library.no.op)
+    "benchmarkImplementation"(libs.chucker.library.no.op)
 }
