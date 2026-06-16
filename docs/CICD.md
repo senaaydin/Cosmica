@@ -10,18 +10,24 @@ behind lint + unit + UI tests. If any test stage fails, the pipeline stops and
 nothing is deployed.
 
 ```
-lint ─▶ unit_tests ─▶ ui_tests ─┬─▶ deploy_test        (develop push → Firebase "testers")
-                                 └─▶ deploy_production  (main push  → Firebase "production")
+lint ─▶ unit_tests ─▶ ui_tests ─┬─▶ deploy_test        (develop push  → Firebase "testers")
+                                 └─▶ deploy_production  (v*.*.* tag    → Firebase "production")
 ```
 
-### Environments & branches
+### Environments & triggers
 
-| Branch    | Flavor | App ID                 | Build type | Distributed to        |
-|-----------|--------|------------------------|------------|-----------------------|
-| `develop` | `dev`  | `com.cosmica.app.dev`  | Debug      | Firebase — `testers`  |
-| `main`    | `prod` | `com.cosmica.app`      | Release    | Firebase — `production` |
+| Trigger          | Flavor | App ID                 | Build type | Distributed to          |
+|------------------|--------|------------------------|------------|-------------------------|
+| push to `develop`| `dev`  | `com.cosmica.app.dev`  | Debug      | Firebase — `testers`    |
+| push tag `v*.*.*`| `prod` | `com.cosmica.app`      | Release    | Firebase — `production` |
 
-Pull requests run lint + unit + UI tests only (no deployment).
+- **Pull requests** and pushes to **`main`** run lint + unit + UI tests only — **no deployment**.
+- A **production release** is cut deliberately by tagging, never on a plain push:
+  ```bash
+  git tag v1.2.0
+  git push origin v1.2.0
+  ```
+  The tagged commit goes through the full test gate before it is distributed.
 
 ## Fastlane lanes
 
@@ -91,5 +97,6 @@ Add these under **Settings → Secrets and variables → Actions**:
 
 ### 4. Verify
 - [ ] Push to `develop` → confirm the test build lands in Firebase `testers`.
-- [ ] Merge/push to `main` → confirm the signed prod build lands in `production`.
+- [ ] Push to `main` → confirm tests run but **nothing deploys**.
+- [ ] Tag `v1.0.0` and push it → confirm the signed prod build lands in `production`.
 - [ ] Break a test on a branch → confirm the pipeline fails and nothing deploys.
