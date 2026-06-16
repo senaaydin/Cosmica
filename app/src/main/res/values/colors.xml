@@ -2,4 +2,6 @@
 <resources>
     <!-- Window background — used by XML theme before Compose takes over -->
     <color name="cosmos_black">#FF0A0E1A</color>
+    <!-- Launcher adaptive-icon background — matches the icon artwork's black border -->
+    <color name="ic_launcher_background">#FF000000</color>
 </resources>
