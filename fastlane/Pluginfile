@@ -1,0 +1,2 @@
+# Adds the firebase_app_distribution action used by the deploy lanes.
+gem "fastlane-plugin-firebase_app_distribution"

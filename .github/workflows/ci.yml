@@ -4,7 +4,7 @@ on:
   push:
     branches: [ develop, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ develop, main ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,11 +27,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Set up Ruby + Bundler (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
       - name: Write NASA_API_KEY to local.properties
         run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
 
-      - name: Run lint
-        run: ./gradlew lintDevDebug --stacktrace
+      - name: Run lint (fastlane)
+        run: bundle exec fastlane lint
 
       - name: Upload lint report
         if: always()
@@ -57,11 +63,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Set up Ruby + Bundler (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
       - name: Write NASA_API_KEY to local.properties
         run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
 
-      - name: Run unit tests
-        run: ./gradlew testDevDebugUnitTest --stacktrace
+      - name: Run unit tests (fastlane)
+        run: bundle exec fastlane test
 
       - name: Upload test results
         if: always()
@@ -70,9 +82,9 @@ jobs:
           name: unit-test-results
           path: app/build/reports/tests/
 
-  # ── 3. Debug build ──────────────────────────────────────────────────────────
-  build_debug:
-    name: Build Debug APK
+  # ── 3. UI / instrumented tests (emulator) ───────────────────────────────────
+  ui_tests:
+    name: UI Tests
     runs-on: ubuntu-latest
     needs: unit_tests
     steps:
@@ -87,24 +99,45 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Set up Ruby + Bundler (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
       - name: Write NASA_API_KEY to local.properties
         run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
 
-      - name: Assemble debug APK
-        run: ./gradlew assembleProdDebug --stacktrace
+      - name: Enable KVM (hardware acceleration for the emulator)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
-      - name: Upload debug APK
+      - name: Run instrumented UI tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          script: bundle exec fastlane ui_test
+
+      - name: Upload UI test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cosmica-debug
-          path: app/build/outputs/apk/prod/debug/*.apk
+          name: ui-test-results
+          path: app/build/reports/androidTests/
 
-  # ── 4. Release build (main branch only) ────────────────────────────────────
-  build_release:
-    name: Build Release APK
+  # ── 4. Deploy TEST version (develop branch only) ────────────────────────────
+  deploy_test:
+    name: Deploy Test (Firebase)
     runs-on: ubuntu-latest
-    needs: build_debug
-    if: github.ref == 'refs/heads/main'
+    needs: ui_tests
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
 
@@ -117,23 +150,63 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      - name: Set up Ruby + Bundler (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
       - name: Write NASA_API_KEY to local.properties
         run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
 
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > cosmica-release.jks
+      - name: Write Firebase service credentials
+        run: echo '${{ secrets.FIREBASE_CREDENTIALS }}' > firebase-credentials.json
 
-      - name: Build release APK
+      - name: Deploy test build to Firebase App Distribution
         env:
-          KEYSTORE_PATH: ${{ github.workspace }}/cosmica-release.jks
-          KEY_ALIAS:     ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD:  ${{ secrets.KEY_PASSWORD }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-        run: ./gradlew assembleProdRelease --stacktrace
+          FIREBASE_TEST_APP_ID: ${{ secrets.FIREBASE_TEST_APP_ID }}
+          FIREBASE_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
+        run: bundle exec fastlane deploy_test
 
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
+  # ── 5. Deploy PRODUCTION version (main branch only) ─────────────────────────
+  deploy_production:
+    name: Deploy Production (Firebase)
+    runs-on: ubuntu-latest
+    needs: ui_tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          name: cosmica-release
-          path: app/build/outputs/apk/prod/release/*.apk
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Set up Ruby + Bundler (fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Write NASA_API_KEY to local.properties
+        run: echo "NASA_API_KEY=${{ secrets.NASA_API_KEY }}" >> local.properties
+
+      - name: Write Firebase service credentials
+        run: echo '${{ secrets.FIREBASE_CREDENTIALS }}' > firebase-credentials.json
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > cosmica-release.jks
+
+      - name: Deploy production build to Firebase App Distribution
+        env:
+          KEYSTORE_PATH:        ${{ github.workspace }}/cosmica-release.jks
+          KEY_ALIAS:            ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:         ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD:       ${{ secrets.STORE_PASSWORD }}
+          FIREBASE_PROD_APP_ID: ${{ secrets.FIREBASE_PROD_APP_ID }}
+          FIREBASE_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
+        run: bundle exec fastlane deploy_production

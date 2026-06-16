@@ -18,3 +18,12 @@ local.properties
 /.idea/deploymentTargetSelector.xml
 /.idea/studiobot.xml
 /.idea/appInsightsSettings.xml
+
+# Firebase — not needed in-app (App Distribution runs via CI), keep out of VCS
+google-services.json
+app/google-services.json
+
+# CI / signing secrets — generated or injected at runtime, never commit
+*.jks
+*.keystore
+firebase-credentials.json
