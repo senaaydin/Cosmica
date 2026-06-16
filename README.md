@@ -14,8 +14,6 @@ Cosmica lets users discover up-to-date, visual content about space. All data is 
 | **Architecture** | Clean Architecture + MVVM |
 | **Data source** | NASA Open APIs (APOD, NeoWs, NASA Image Library) |
 
-> 🇹🇷 Türkçe proje dokümanı için: [docs/PROJE_DOKUMANI.md](docs/PROJE_DOKUMANI.md)
-
 ---
 
 ## 1. Features
