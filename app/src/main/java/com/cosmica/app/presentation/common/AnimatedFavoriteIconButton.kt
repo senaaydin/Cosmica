@@ -92,7 +92,10 @@ fun AnimatedFavoriteIconButton(
     ) {
         Icon(
             imageVector        = icon,
-            contentDescription = contentDescription,
+            // Decorative: the surrounding Box already exposes the button's
+            // contentDescription, so describing the icon too makes screen
+            // readers announce it twice (and yields a duplicated value).
+            contentDescription = null,
             tint               = tint,
             modifier           = Modifier
                 .size(size)
