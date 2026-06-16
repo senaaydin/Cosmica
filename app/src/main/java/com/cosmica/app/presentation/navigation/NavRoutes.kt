@@ -1,11 +1,11 @@
 package com.cosmica.app.presentation.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.PhotoLibrary
-import androidx.compose.material.icons.rounded.Rocket
-import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.outlined.Collections
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.NightsStay
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class NavRoutes(val route: String) {
@@ -14,6 +14,7 @@ sealed class NavRoutes(val route: String) {
     data object Favorites : NavRoutes("favorites")
     data object Asteroids : NavRoutes("asteroids")
     data object Search    : NavRoutes("search")
+    data object MoonPhase : NavRoutes("moon_phase")
 
     data object ApodDetail : NavRoutes("apod_detail/{date}") {
         fun createRoute(date: String) = "apod_detail/$date"
@@ -33,9 +34,9 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem(NavRoutes.Home.route,      Icons.Rounded.Home,         com.cosmica.app.R.string.nav_home),
-    BottomNavItem(NavRoutes.Gallery.route,   Icons.Rounded.PhotoLibrary, com.cosmica.app.R.string.nav_gallery),
-    BottomNavItem(NavRoutes.Favorites.route, Icons.Rounded.Favorite,     com.cosmica.app.R.string.nav_favorites),
-    BottomNavItem(NavRoutes.Asteroids.route, Icons.Rounded.Rocket,       com.cosmica.app.R.string.nav_asteroids),
-    BottomNavItem(NavRoutes.Search.route,    Icons.Rounded.Search,       com.cosmica.app.R.string.nav_search),
+    BottomNavItem(NavRoutes.Home.route,      Icons.Outlined.Public,         com.cosmica.app.R.string.nav_home),
+    BottomNavItem(NavRoutes.Gallery.route,   Icons.Outlined.Collections,    com.cosmica.app.R.string.nav_gallery),
+    BottomNavItem(NavRoutes.Favorites.route, Icons.Outlined.FavoriteBorder, com.cosmica.app.R.string.nav_favorites),
+    BottomNavItem(NavRoutes.Asteroids.route, Icons.Outlined.RocketLaunch,   com.cosmica.app.R.string.nav_asteroids),
+    BottomNavItem(NavRoutes.MoonPhase.route, Icons.Outlined.NightsStay,     com.cosmica.app.R.string.nav_moon_phase),
 )

@@ -2,45 +2,71 @@ default_platform(:android)
 
 platform :android do
 
-  desc "Run unit tests"
+  # ── Quality gates ──────────────────────────────────────────────────────────
+
+  desc "Run unit tests (dev flavor)"
   lane :test do
     gradle(task: "test", flavor: "dev", build_type: "Debug")
   end
 
-  desc "Run lint checks"
+  desc "Run instrumented UI tests on a connected emulator/device (dev flavor)"
+  lane :ui_test do
+    gradle(task: "connectedDevDebugAndroidTest")
+  end
+
+  desc "Run lint checks (dev flavor)"
   lane :lint do
     gradle(task: "lint", flavor: "dev", build_type: "Debug")
   end
 
-  desc "Build debug APK"
-  lane :build_debug do
-    gradle(task: "assemble", flavor: "prod", build_type: "Debug")
+  # ── Builds ─────────────────────────────────────────────────────────────────
+
+  desc "Build the test (dev) debug APK"
+  lane :build_test do
+    gradle(task: "assemble", flavor: "dev", build_type: "Debug")
   end
 
-  desc "Build release APK (requires signing ENV vars)"
-  lane :build_release do
-    gradle(
-      task:       "assemble",
-      flavor:     "prod",
-      build_type: "Release",
-      properties: {
-        "android.injected.signing.store.file"     => ENV["KEYSTORE_PATH"],
-        "android.injected.signing.store.password" => ENV["STORE_PASSWORD"],
-        "android.injected.signing.key.alias"      => ENV["KEY_ALIAS"],
-        "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
-      }
-    )
+  desc "Build the production (prod) release APK. Signing is read from " \
+       "KEYSTORE_PATH / STORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD env vars by Gradle."
+  lane :build_production do
+    gradle(task: "assemble", flavor: "prod", build_type: "Release")
   end
 
-  desc "Build debug APK and upload to Firebase App Distribution"
+  # ── Distribution (Firebase App Distribution) ───────────────────────────────
+
+  desc "Distribute the TEST version to Firebase (dev flavor → testers group). " \
+       "Triggered from the develop branch."
   lane :deploy_test do
-    build_debug
+    build_test
     firebase_app_distribution(
-      app:              ENV["FIREBASE_APP_ID"],
+      app:                      ENV["FIREBASE_TEST_APP_ID"],
       service_credentials_file: ENV["FIREBASE_CREDENTIALS"],
-      release_notes:    "CI build — #{ENV['GITHUB_SHA']&.slice(0, 7) || 'local'}",
-      groups:           "testers",
+      android_artifact_type:    "APK",
+      android_artifact_path:    "app/build/outputs/apk/dev/debug/app-dev-debug.apk",
+      release_notes:            release_notes_text("TEST"),
+      groups:                   "testers",
     )
   end
 
+  desc "Distribute the PRODUCTION version to Firebase (prod flavor → production group). " \
+       "Triggered from the main branch."
+  lane :deploy_production do
+    build_production
+    firebase_app_distribution(
+      app:                      ENV["FIREBASE_PROD_APP_ID"],
+      service_credentials_file: ENV["FIREBASE_CREDENTIALS"],
+      android_artifact_type:    "APK",
+      android_artifact_path:    "app/build/outputs/apk/prod/release/app-prod-release.apk",
+      release_notes:            release_notes_text("PRODUCTION"),
+      groups:                   "production",
+    )
+  end
+
+end
+
+# Builds a short release note from the current CI commit/run, with a local fallback.
+def release_notes_text(channel)
+  sha = ENV["GITHUB_SHA"]&.slice(0, 7) || "local"
+  run = ENV["GITHUB_RUN_NUMBER"] || "dev"
+  "Cosmica #{channel} build ##{run} (#{sha})"
 end

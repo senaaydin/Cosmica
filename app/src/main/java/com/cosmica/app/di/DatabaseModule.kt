@@ -19,7 +19,7 @@ object DatabaseModule {
     @Singleton
     fun provideCosmicaDatabase(@ApplicationContext context: Context): CosmicaDatabase =
         Room.databaseBuilder(context, CosmicaDatabase::class.java, "cosmica.db")
-            .fallbackToDestructiveMigration()
+            .addMigrations(CosmicaDatabase.MIGRATION_1_2)
             .build()
 
     @Provides

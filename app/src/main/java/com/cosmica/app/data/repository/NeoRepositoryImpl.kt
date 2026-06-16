@@ -1,6 +1,5 @@
 package com.cosmica.app.data.repository
 
-import com.cosmica.app.BuildConfig
 import com.cosmica.app.data.mapper.toDomain
 import com.cosmica.app.data.remote.api.NeoApiService
 import com.cosmica.app.domain.model.NearEarthObject
@@ -18,11 +17,9 @@ class NeoRepositoryImpl @Inject constructor(
         val weekEnd   = today.plusDays(7)
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-        val response = neoApiService.getAsteroids(
-            apiKey    = BuildConfig.NASA_API_KEY,
+        neoApiService.getAsteroids(
             startDate = today.format(formatter),
             endDate   = weekEnd.format(formatter),
-        )
-        response.toDomain().sortedBy { it.closeApproachDate }
+        ).toDomain().sortedBy { it.closeApproachDate }
     }
 }

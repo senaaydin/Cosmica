@@ -2,11 +2,14 @@ package com.cosmica.app.presentation.theme
 
 import android.app.Activity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 // Cosmica is always dark — the cosmos doesn't have a light mode.
@@ -38,6 +41,14 @@ private val CosmikaColorScheme = darkColorScheme(
     scrim                = CosmosBlack.copy(alpha = 0.6f),
 )
 
+private val CosmikaShapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(8.dp),
+    large = RoundedCornerShape(12.dp),
+    extraLarge = RoundedCornerShape(18.dp),
+)
+
 @Composable
 fun CosmikaTheme(content: @Composable () -> Unit) {
     val view = LocalView.current
@@ -55,7 +66,8 @@ fun CosmikaTheme(content: @Composable () -> Unit) {
 
     MaterialTheme(
         colorScheme = CosmikaColorScheme,
-        typography  = CosmikaTypography,
+        typography  = CosmicaTypography,
+        shapes      = CosmikaShapes,
         content     = content,
     )
 }

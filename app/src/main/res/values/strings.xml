@@ -18,6 +18,7 @@
     <string name="home_watch_video">Watch on YouTube</string>
 
     <!-- GalleryScreen -->
+    <string name="gallery_eyebrow">COSMICA</string>
     <string name="gallery_title">APOD Gallery</string>
     <string name="gallery_date_picker_title">Select date range</string>
     <string name="gallery_empty">No photos found for this date range.</string>
@@ -57,9 +58,12 @@
 
     <!-- FavoritesScreen -->
     <string name="nav_favorites">Favorites</string>
+    <string name="favorites_eyebrow">SAVED</string>
     <string name="favorites_title">Favorites</string>
     <string name="favorites_empty">No favorites yet.\nTap the heart on the home screen to save an APOD.</string>
     <string name="favorites_image_content_description">%s – saved APOD</string>
+    <string name="favorites_removed">"%s" removed</string>
+    <string name="favorites_undo">Undo</string>
 
     <!-- NasaImageDetailScreen -->
     <string name="search_detail_date">Date: %s</string>
@@ -70,10 +74,37 @@
     <string name="gallery_date_picker_confirm">Go</string>
     <string name="gallery_date_picker_dismiss">Cancel</string>
 
+    <!-- MoonPhaseScreen -->
+    <string name="nav_moon_phase">Moon</string>
+    <string name="moon_phase_title">Tonight\'s Moon</string>
+    <string name="moon_phase_permission_title">Show the moon above you</string>
+    <string name="moon_phase_permission_rationale">Cosmica uses your location to fetch the exact moon phase, moonrise and moonset times for where you are tonight. Location data never leaves your device.</string>
+    <string name="moon_phase_permission_allow">Allow</string>
+    <string name="moon_phase_permission_deny">Not now</string>
+    <string name="moon_phase_search_hint">Location unavailable — search a city instead.</string>
+    <string name="moon_phase_search_placeholder">Search city…</string>
+    <string name="moon_phase_open_settings">Open app settings</string>
+    <string name="moon_phase_illumination">%d%% illuminated</string>
+    <string name="moon_phase_next_full">Next full moon</string>
+    <string name="moon_phase_days_until_full">In %d days</string>
+    <string name="moon_phase_full_today">Tonight</string>
+    <string name="moon_phase_new_moon">New Moon</string>
+    <string name="moon_phase_waxing_crescent">Waxing Crescent</string>
+    <string name="moon_phase_first_quarter">First Quarter</string>
+    <string name="moon_phase_waxing_gibbous">Waxing Gibbous</string>
+    <string name="moon_phase_full_moon">Full Moon</string>
+    <string name="moon_phase_waning_gibbous">Waning Gibbous</string>
+    <string name="moon_phase_last_quarter">Last Quarter</string>
+    <string name="moon_phase_waning_crescent">Waning Crescent</string>
+
     <!-- Content descriptions (accessibility) -->
     <string name="cd_apod_image">Astronomy picture of the day</string>
     <string name="cd_favorite_button">Favorite button</string>
+    <string name="cd_delete_favorite">Remove from favorites</string>
     <string name="cd_back_button">Back</string>
     <string name="cd_video_thumbnail">Video thumbnail</string>
+    <string name="cd_play_video">Play video</string>
+    <string name="cd_fullscreen_video">Open video fullscreen</string>
+    <string name="cd_close_fullscreen_video">Close fullscreen video</string>
     <string name="cd_asteroid_hazard_indicator">Hazard indicator</string>
 </resources>
