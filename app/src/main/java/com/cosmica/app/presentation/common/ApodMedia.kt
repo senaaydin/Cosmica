@@ -40,7 +40,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.MediaItem
+import androidx.annotation.OptIn
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -360,6 +362,9 @@ private fun YouTubeEmbedPlayer(
     }
 }
 
+// PlayerView and its resize/buffering options are still marked @UnstableApi in
+// media3; opt in explicitly since we intentionally depend on them here.
+@OptIn(UnstableApi::class)
 @Composable
 private fun ExoPlayerView(
     player: ExoPlayer,
