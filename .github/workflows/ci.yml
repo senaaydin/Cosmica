@@ -209,6 +209,9 @@ jobs:
 
       - name: Deploy test build to Firebase App Distribution
         env:
+          # Unique, increasing version per run; name carries the run number.
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 1.0.${{ github.run_number }}
           FIREBASE_TEST_APP_ID: ${{ secrets.FIREBASE_TEST_APP_ID }}
           FIREBASE_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
         run: bundle exec fastlane deploy_test
@@ -248,6 +251,10 @@ jobs:
 
       - name: Deploy production build to Firebase App Distribution
         env:
+          # Version code from the run number; version name from the release tag
+          # (e.g. v1.2.0); the build script strips the leading "v".
+          VERSION_CODE:         ${{ github.run_number }}
+          VERSION_NAME:         ${{ github.ref_name }}
           KEYSTORE_PATH:        ${{ github.workspace }}/cosmica-release.jks
           KEY_ALIAS:            ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD:         ${{ secrets.KEY_PASSWORD }}

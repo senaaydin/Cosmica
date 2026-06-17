@@ -14,6 +14,12 @@ val localProperties = Properties().apply {
 }
 val nasaApiKey: String = localProperties.getProperty("NASA_API_KEY", "DEMO_KEY")
 
+// Versioning is injected by CI so every release gets a unique, increasing code.
+// VERSION_CODE comes from the CI run number; VERSION_NAME from the release tag
+// (a leading "v" is stripped). Locally both fall back to a stable default.
+val ciVersionCode: Int = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
+val ciVersionName: String = (System.getenv("VERSION_NAME") ?: "1.0").removePrefix("v")
+
 android {
     namespace = "com.cosmica.app"
     compileSdk = 36
@@ -22,8 +28,8 @@ android {
         applicationId = "com.cosmica.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = ciVersionCode
+        versionName = ciVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
