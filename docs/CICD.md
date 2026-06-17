@@ -10,24 +10,31 @@ behind lint + unit + UI tests. If any test stage fails, the pipeline stops and
 nothing is deployed.
 
 ```
-lint ─▶ unit_tests ─▶ ui_tests ─┬─▶ deploy_test        (develop push  → Firebase "testers")
-                                 └─▶ deploy_production  (v*.*.* tag    → Firebase "production")
+lint ─▶ unit_tests ─▶ ui_tests ─▶ determine_target ─┬─▶ deploy_test       (→ Firebase "testers")
+                                                     └─▶ deploy_production (→ Firebase "production")
 ```
 
 ### Environments & triggers
 
-| Trigger          | Flavor | App ID                 | Build type | Distributed to          |
-|------------------|--------|------------------------|------------|-------------------------|
-| push to `develop`| `dev`  | `com.cosmica.app.dev`  | Debug      | Firebase — `testers`    |
-| push tag `v*.*.*`| `prod` | `com.cosmica.app`      | Release    | Firebase — `production` |
+`determine_target` routes each run; for a tag it checks which branch the tagged
+commit belongs to (`git merge-base --is-ancestor`).
+
+| Trigger                       | Flavor | App ID                 | Build type | Distributed to          |
+|-------------------------------|--------|------------------------|------------|-------------------------|
+| push to `develop`             | `dev`  | `com.cosmica.app.dev`  | Debug      | Firebase — `testers`    |
+| tag — commit on `develop`     | `dev`  | `com.cosmica.app.dev`  | Debug      | Firebase — `testers`    |
+| tag — commit on `main`        | `prod` | `com.cosmica.app`      | Release    | Firebase — `production` |
 
 - **Pull requests** and pushes to **`main`** run lint + unit + UI tests only — **no deployment**.
-- A **production release** is cut deliberately by tagging, never on a plain push:
+- A **production release** is cut deliberately by tagging a commit on `main`:
   ```bash
   git tag v1.2.0
   git push origin v1.2.0
   ```
-  The tagged commit goes through the full test gate before it is distributed.
+  The tagged commit goes through the full test gate first. `determine_target`
+  then sends it to **production** only if it is on `main`'s history, to **test**
+  if it is on `develop`, and **fails** otherwise — so production can only ship
+  from `main`.
 
 ## Fastlane lanes
 
